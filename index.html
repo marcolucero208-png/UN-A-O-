@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Un Año Contigo · Mi Niña Hermosa</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --pink: #f9d4e8;
+    --purple: #c8a8e8;
+    --rose: #e8b4cb;
+    --gold: #f0d080;
+  }
+
+  body {
+    background: #07071a;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: 'Lato', sans-serif;
+    color: #fff;
+  }
+
+  /* ===== CANVAS STARS ===== */
+  #starsCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ===== PETALS ===== */
+  .petal {
+    position: fixed;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    animation: petalFall linear infinite;
+  }
+  @keyframes petalFall {
+    0%   { opacity: 0;   transform: translateY(-30px) rotate(0deg) scale(1); }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.3; }
+    100% { opacity: 0;   transform: translateY(105vh) rotate(400deg) scale(0.8); }
+  }
+
+  /* ===== SCENE ===== */
+  .scene {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0 20px 80px;
+  }
+
+  /* ===== COVER ===== */
+  #screen-cover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    position: relative;
+    width: 100%;
+  }
+
+  .crown { font-size: 56px; animation: float 3s ease-in-out infinite; margin-bottom: 12px; }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-14px) rotate(3deg); }
+  }
+
+  .for-her {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    font-size: 12px;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 18px;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.5s forwards;
+  }
+
+  .main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(44px, 12vw, 80px);
+    font-weight: 700;
+    line-height: 1.05;
+    background: linear-gradient(135deg, var(--pink), #ffffff, var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: fadeUp 1.2s ease 0.8s forwards;
+    margin-bottom: 10px;
+  }
+
+  .subtitle-cover {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(17px, 4vw, 26px);
+    color: var(--rose);
+    opacity: 0;
+    animation: fadeUp 1.2s ease 1.2s forwards;
+    margin-bottom: 6px;
+  }
+
+  .date-badge {
+    margin-top: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(232,180,203,0.35);
+    border-radius: 40px;
+    padding: 11px 32px;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--rose);
+    opacity: 0;
+    animation: fadeUp 1.2s ease 1.6s forwards;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.3);
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 1s ease 2.8s forwards;
+  }
+  .scroll-arrow {
+    width: 16px; height: 16px;
+    border-right: 1px solid rgba(255,255,255,0.25);
+    border-bottom: 1px solid rgba(255,255,255,0.25);
+    transform: rotate(45deg);
+    animation: bounce 1.6s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: rotate(45deg) translateY(0); }
+    50%      { transform: rotate(45deg) translateY(6px); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto 80px;
+    opacity: 0;
+    transform: translateY(44px);
+    transition: opacity 0.95s ease, transform 0.95s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .section-label::before, .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(200,168,232,0.35), transparent);
+  }
+
+  .card-glass {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    padding: 40px 44px;
+    backdrop-filter: blur(12px);
+  }
+
+  /* ===== COUNTER ===== */
+  .counter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .counter-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 28px 20px;
+    text-align: center;
+    transition: transform 0.3s, border-color 0.3s;
+    cursor: default;
+  }
+  .counter-card:hover { transform: translateY(-5px); border-color: rgba(232,180,203,0.4); }
+  .counter-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 9vw, 60px);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .counter-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.42);
+    text-transform: uppercase;
+  }
+
+  /* ===== FLOWERS ===== */
+  .flowers-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+  }
+  .flower {
+    font-size: 38px;
+    animation: floatFlower 3s ease-in-out infinite;
+    cursor: default;
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .flower:hover { transform: scale(1.5) rotate(12deg) !important; }
+  .flower:nth-child(1) { animation-delay: 0s; }
+  .flower:nth-child(2) { animation-delay: 0.4s; }
+  .flower:nth-child(3) { animation-delay: 0.8s; }
+  .flower:nth-child(4) { animation-delay: 1.2s; }
+  .flower:nth-child(5) { animation-delay: 1.6s; }
+  .flower:nth-child(6) { animation-delay: 2.0s; }
+  @keyframes floatFlower {
+    0%,100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(-12px) rotate(4deg); }
+  }
+
+  /* ===== CARTA ===== */
+  .letter-body {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(15px, 2.8vw, 19px);
+    line-height: 1.95;
+    color: rgba(255,255,255,0.85);
+  }
+  .letter-body p { margin-bottom: 1.5em; }
+
+  .letter-highlight {
+    color: var(--pink);
+    font-weight: 700;
+    font-style: italic;
+  }
+
+  .letter-divider {
+    width: 50px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(200,168,232,0.5), transparent);
+    margin: 28px auto;
+  }
+
+  .letter-signature {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: rgba(255,255,255,0.5);
+    text-align: right;
+    margin-bottom: 6px;
+  }
+  .letter-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--rose);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* ===== TIMELINE ===== */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 24px; position: relative; padding-bottom: 34px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; min-width: 44px; }
+  .tl-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    flex-shrink: 0;
+    box-shadow: 0 0 16px rgba(232,180,203,0.55);
+  }
+  .tl-line {
+    flex: 1; width: 1px;
+    background: linear-gradient(to bottom, rgba(200,168,232,0.35), transparent);
+    margin-top: 5px;
+  }
+  .tl-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: var(--rose);
+    margin-bottom: 6px;
+  }
+  .tl-desc { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.75; }
+
+  /* ===== FRASES BONITAS ===== */
+  .quote-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .quote-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(200,168,232,0.14);
+    border-radius: 16px;
+    padding: 22px 20px;
+    text-align: center;
+    transition: transform 0.3s, border-color 0.3s;
+    cursor: default;
+  }
+  .quote-card:hover { transform: translateY(-4px); border-color: rgba(232,180,203,0.35); }
+  .quote-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+  .quote-text {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.7;
+  }
+
+  /* ===== PROMESAS ===== */
+  .promise-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .promise-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 18px 22px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 14px;
+    border: 1px solid rgba(200,168,232,0.12);
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .promise-item:hover { border-color: rgba(232,180,203,0.35); transform: translateX(6px); }
+  .promise-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .promise-text { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.7; }
+
+  /* ===== MÚSICA / RAZONES ===== */
+  .reasons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .reason-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 20px 14px;
+    text-align: center;
+    transition: transform 0.3s, border-color 0.3s;
+    cursor: default;
+  }
+  .reason-card:hover { transform: translateY(-5px) scale(1.03); border-color: rgba(232,180,203,0.3); }
+  .reason-icon { font-size: 30px; display: block; margin-bottom: 10px; }
+  .reason-text { font-size: 12px; color: rgba(255,255,255,0.55); letter-spacing: 0.5px; line-height: 1.5; }
+
+  /* ===== FINALE ===== */
+  .finale { text-align: center; padding: 60px 24px; }
+  .heart-big {
+    font-size: 88px;
+    animation: heartbeat 1.3s ease-in-out infinite;
+    display: block;
+    margin-bottom: 22px;
+  }
+  @keyframes heartbeat {
+    0%,100% { transform: scale(1); }
+    14%      { transform: scale(1.18); }
+    28%      { transform: scale(1); }
+    42%      { transform: scale(1.1); }
+    70%      { transform: scale(1); }
+  }
+  .finale-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 6vw, 44px);
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, var(--pink), #ffffff, var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .finale-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1.5px;
+    margin-top: 6px;
+  }
+  .finale-att {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 28px;
+    margin-bottom: 6px;
+  }
+  .finale-sign {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px;
+    color: var(--rose);
+    text-shadow: 0 0 30px rgba(232,180,203,0.4);
+  }
+
+  /* ===== ESTRELLAS DORADAS ===== */
+  .stars-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+    font-size: 20px;
+    animation: twinkleRow 2s ease-in-out infinite;
+  }
+  @keyframes twinkleRow {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.5; }
+  }
+
+  .divider-fancy {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 0 auto 24px;
+    color: var(--purple);
+    font-size: 18px;
+  }
+  .divider-fancy::before, .divider-fancy::after {
+    content: '';
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(200,168,232,0.4));
+  }
+  .divider-fancy::after { transform: scaleX(-1); }
+
+  @media (max-width: 540px) {
+    .card-glass { padding: 26px 22px; }
+    .counter-grid { gap: 10px; }
+    .quote-grid { grid-template-columns: 1fr; }
+    .reasons-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="starsCanvas"></canvas>
+
+<div class="scene">
+
+  <!-- ══════ PORTADA ══════ -->
+  <div id="screen-cover">
+    <div class="crown">👑</div>
+    <p class="for-her">Para ti · mi niña hermosa</p>
+    <h1 class="main-title">Un Año<br>Contigo</h1>
+    <p class="subtitle-cover">365 días de pura magia</p>
+    <div class="date-badge">✦ 29 · Marzo · 2025 → 2026 ✦</div>
+    <div class="scroll-hint">
+      <span>desliza</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </div>
+
+  <!-- ══════ FLORES ══════ -->
+  <div class="section" data-delay="0">
+    <div class="section-label">Un jardín para ti</div>
+    <div class="card-glass" style="text-align:center;">
+      <div class="flowers-row">
+        <span class="flower">🌸</span>
+        <span class="flower">🌺</span>
+        <span class="flower">🌹</span>
+        <span class="flower">🌷</span>
+        <span class="flower">💐</span>
+        <span class="flower">🌼</span>
+      </div>
+      <p style="font-family:'Playfair Display',serif; font-style:italic; font-size:18px; color:rgba(255,255,255,0.7); margin-top:24px; line-height:1.8;">
+        Como flores que florecen cada mañana,<br>así ha sido cada día a tu lado.
+      </p>
+      <div class="stars-row" style="margin-top:20px;">
+        ✨ 💕 ✨ 💕 ✨
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ CONTADOR ══════ -->
+  <div class="section" data-delay="80">
+    <div class="section-label">Lo que hemos vivido</div>
+    <div class="counter-grid">
+      <div class="counter-card">
+        <div class="counter-num" id="cnt-days">0</div>
+        <div class="counter-label">Días juntos</div>
+      </div>
+      <div class="counter-card">
+        <div class="counter-num">∞</div>
+        <div class="counter-label">Risas compartidas</div>
+      </div>
+      <div class="counter-card">
+        <div class="counter-num" id="cnt-hours">0</div>
+        <div class="counter-label">Horas de recuerdos</div>
+      </div>
+      <div class="counter-card">
+        <div class="counter-num">1</div>
+        <div class="counter-label">Tú. Única. Especial.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ CARTA ══════ -->
+  <div class="section" data-delay="120">
+    <div class="section-label">Una carta del corazón</div>
+    <div class="card-glass">
+      <div class="letter-body">
+
+        <p>Mi niña hermosa,</p>
+
+        <p>Hace exactamente un año nuestros caminos se cruzaron, y desde ese preciso instante el mundo cambió de color para mí. No sé si lo notas, pero <span class="letter-highlight">llevas contigo algo que muy poca gente tiene</span> — una luz propia, suave pero tan poderosa que ilumina cada espacio que pisas y cada persona que tienes cerca.</p>
+
+        <p>Este año me enseñaste que <span class="letter-highlight">hay personas que llegan a tu vida sin hacer ruido</span>, pero que lo cambian todo. Así llegaste tú — sin anunciarte, sin pedir permiso — y de pronto estabas ahí, siendo parte de mis días favoritos.</p>
+
+        <p>Gracias por cada conversación que comenzó con un "hola" y terminó horas después sin querer. Gracias por compartir conmigo tus risas, tus locuras, tus pensamientos de madrugada, tus sueños, tus miedos y todas esas pequeñas cosas que te hacen exactamente quien eres. Cada momento que hemos compartido <span class="letter-highlight">es un tesoro que guardo con mucho cuidado</span> en lo más profundo de mi corazón.</p>
+
+        <p>Hay algo en tu forma de ser que me hace querer ser mejor. Esa manera tuya de ver la vida, de reírte de todo, de hacer que hasta los momentos más simples se sientan especiales. Eso no lo tiene cualquiera, y tú lo tienes de sobra.</p>
+
+        <p>Si pudiera pedirle algo al universo hoy, sería que <span class="letter-highlight">siempre estés rodeada de todo lo hermoso que mereces</span>. Que la vida te trate con la misma dulzura con que tú tratas a los demás. Que cada sueño tuyo encuentre su camino, y que nunca te falten personas que te vean como yo te veo — como alguien verdaderamente extraordinaria.</p>
+
+        <p>Hoy, en este aniversario de habernos conocido, solo quiero que sepas que eres de esas personas que uno no olvida. De esas que dejan huella. De esas que, cuando llegan a tu vida, das gracias de que el destino haya conspirado para que sus caminos se cruzaran.</p>
+
+        <p style="color: var(--pink);">Feliz un año, mi niña hermosa. TE AMO CON TODO EL ALMA Y CON TODO MI CORAZÓN. 💕</p>
+
+      </div>
+
+      <div class="letter-divider"></div>
+
+      <p class="letter-signature">Con todo el cariño del mundo,</p>
+      <p class="letter-name">Att. Tu Ojitos Bonitos 🥺💖</p>
+    </div>
+  </div>
+
+  <!-- ══════ FRASES PARA ELLA ══════ -->
+  <div class="section" data-delay="150">
+    <div class="section-label">Lo que eres para mí</div>
+    <div class="quote-grid">
+      <div class="quote-card">
+        <span class="quote-icon">🌙</span>
+        <p class="quote-text">"Eres la persona que hace que los días malos se sientan menos pesados"</p>
+      </div>
+      <div class="quote-card">
+        <span class="quote-icon">⭐</span>
+        <p class="quote-text">"Tu sonrisa es de esas que uno no puede evitar recordar"</p>
+      </div>
+      <div class="quote-card">
+        <span class="quote-icon">🌸</span>
+        <p class="quote-text">"Hay personas que llegan y hacen que todo tenga más color. Tú eres una de ellas"</p>
+      </div>
+      <div class="quote-card">
+        <span class="quote-icon">💫</span>
+        <p class="quote-text">"No sabía que me faltabas hasta que apareciste"</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ TIMELINE ══════ -->
+  <div class="section" data-delay="180">
+    <div class="section-label">Nuestros momentos</div>
+    <div class="card-glass">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-title">✨ El primer día</div>
+            <div class="tl-desc">El universo conspiró para que nos conociéramos. Ese día comenzó todo, sin que ninguno de los dos lo supiera todavía.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-title">💬 Conversaciones sin fin</div>
+            <div class="tl-desc">Momentos que se extendían porque ninguno quería terminarlos. El tiempo siempre se nos iba volando.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-title">🌟 Todo lo que compartimos</div>
+            <div class="tl-desc">Risas, secretos, locuras, sueños, miedos. Todo lo importante se comparte con alguien especial, y tú eres esa persona especial.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-title">💕 Los momentos simples</div>
+            <div class="tl-desc">Que contigo se volvieron los más bonitos de todos. Eso solo lo logran las personas de verdad especiales.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot"></div></div>
+          <div class="tl-content">
+            <div class="tl-title">🎂 Hoy · Un año</div>
+            <div class="tl-desc">Un año de haberte conocido. El regalo más bonito que este año me pudo dar.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ RAZONES ══════ -->
+  <div class="section" data-delay="200">
+    <div class="section-label">Razones para celebrar hoy</div>
+    <div class="reasons-grid">
+      <div class="reason-card"><span class="reason-icon">🌺</span><p class="reason-text">Tu forma de reír que lo ilumina todo</p></div>
+      <div class="reason-card"><span class="reason-icon">💜</span><p class="reason-text">Tu corazón enorme y bonito</p></div>
+      <div class="reason-card"><span class="reason-icon">✨</span><p class="reason-text">La luz que llevas dentro sin darte cuenta</p></div>
+      <div class="reason-card"><span class="reason-icon">🌙</span><p class="reason-text">Tus pensamientos tan únicos</p></div>
+      <div class="reason-card"><span class="reason-icon">🎵</span><p class="reason-text">Esos momentos contigo que son mis favoritos</p></div>
+      <div class="reason-card"><span class="reason-icon">💫</span><p class="reason-text">Simplemente por ser tú</p></div>
+    </div>
+  </div>
+
+  <!-- ══════ PROMESAS ══════ -->
+  <div class="section" data-delay="230">
+    <div class="section-label">Lo que te prometo</div>
+    <div class="card-glass">
+      <ul class="promise-list">
+        <li class="promise-item">
+          <span class="promise-icon">🌙</span>
+          <span class="promise-text">Estar siempre que me necesites, en las noches difíciles y en las mañanas felices. En los momentos de risa y también en los que duela.</span>
+        </li>
+        <li class="promise-item">
+          <span class="promise-icon">🤍</span>
+          <span class="promise-text">Valorarte como mereces siempre. Recordarte que eres extraordinaria cuando tú misma lo olvides.</span>
+        </li>
+        <li class="promise-item">
+          <span class="promise-icon">✨</span>
+          <span class="promise-text">Que cada año que pase, este recuerdo de habernos conocido sea cada vez más especial para los dos.</span>
+        </li>
+        <li class="promise-item">
+          <span class="promise-icon">💖</span>
+          <span class="promise-text">Nunca dejarte dudar de lo valiosa que eres. Porque personas como tú no se encuentran dos veces en la vida.</span>
+        </li>
+        <li class="promise-item">
+          <span class="promise-icon">🌺</span>
+          <span class="promise-text">Celebrar cada momento contigo como si fuera la primera vez. Porque tú te mereces eso y mucho más.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════ FINAL ══════ -->
+  <div class="section" data-delay="260">
+    <div class="card-glass finale">
+      <span class="heart-big">💖</span>
+      <div class="divider-fancy">✦</div>
+      <h2 class="finale-title">Mi Niña Hermosa</h2>
+      <p style="font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(15px,3vw,19px); color:rgba(255,255,255,0.7); margin:18px auto 0; max-width:480px; line-height:1.9;">
+        Feliz primer aniversario de habernos conocido.
+      </p>
+      <p style="font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(26px,6vw,48px); margin:22px auto 0; max-width:560px; line-height:1.2; background: linear-gradient(135deg, #f9d4e8, #ffffff, #c8a8e8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-shadow: none;">
+        TE AMO CON TODO EL ALMA 💖
+      </p>
+      <div class="stars-row" style="margin-top:28px; margin-bottom:28px;">✨ 💕 🌸 💕 ✨</div>
+      <p class="finale-att">Atte. con todo mi cariño,</p>
+      <p class="finale-sign">Tu Ojitos Bonitos 💖</p>
+      <p class="finale-sub" style="margin-top:18px;">29 · Marzo · 2026</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Stars canvas ──
+const canvas = document.getElementById('starsCanvas');
+const ctx = canvas.getContext('2d');
+let stars = [], shootingStars = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function createStars() {
+  stars = [];
+  for (let i = 0; i < 220; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.6 + 0.2,
+      alpha: Math.random(),
+      speed: Math.random() * 0.004 + 0.001,
+      phase: Math.random() * Math.PI * 2,
+      color: Math.random() > 0.7 ? '#f9d4e8' : Math.random() > 0.5 ? '#c8a8e8' : '#ffffff'
+    });
+  }
+}
+
+function spawnShootingStar() {
+  shootingStars.push({
+    x: Math.random() * canvas.width * 0.7,
+    y: Math.random() * canvas.height * 0.4,
+    len: 80 + Math.random() * 100,
+    speed: 4 + Math.random() * 4,
+    alpha: 1,
+    angle: Math.PI / 5
+  });
+}
+
+function drawStars(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  grad.addColorStop(0, '#07071a');
+  grad.addColorStop(0.5, '#0e0720');
+  grad.addColorStop(1, '#07101e');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // glow orbs
+  [
+    [canvas.width * 0.15, canvas.height * 0.25, 220, 'rgba(160,100,200,0.07)'],
+    [canvas.width * 0.82, canvas.height * 0.55, 260, 'rgba(220,130,165,0.06)'],
+    [canvas.width * 0.5,  canvas.height * 0.75, 190, 'rgba(100,140,220,0.04)']
+  ].forEach(([x, y, r, c]) => {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, c); g.addColorStop(1, 'transparent');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  });
+
+  stars.forEach(s => {
+    const a = 0.25 + 0.75 * ((Math.sin(t * s.speed + s.phase) + 1) / 2);
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = s.color.replace(')', `, ${a * s.alpha})`).replace('rgb', 'rgba').replace('#', 'rgba(').replace(/([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})\)/, (_, r, g, b) => `${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)},${a * s.alpha})`);
+    ctx.fill();
+  });
+
+  // shooting stars
+  shootingStars = shootingStars.filter(ss => ss.alpha > 0);
+  shootingStars.forEach(ss => {
+    ctx.save();
+    ctx.globalAlpha = ss.alpha;
+    const grd = ctx.createLinearGradient(ss.x, ss.y, ss.x + Math.cos(ss.angle) * ss.len, ss.y + Math.sin(ss.angle) * ss.len);
+    grd.addColorStop(0, '#ffffff');
+    grd.addColorStop(1, 'transparent');
+    ctx.strokeStyle = grd;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(ss.x, ss.y);
+    ctx.lineTo(ss.x + Math.cos(ss.angle) * ss.len, ss.y + Math.sin(ss.angle) * ss.len);
+    ctx.stroke();
+    ctx.restore();
+    ss.x += Math.cos(ss.angle) * ss.speed;
+    ss.y += Math.sin(ss.angle) * ss.speed;
+    ss.alpha -= 0.018;
+  });
+}
+
+let t = 0;
+function animate() {
+  t += 0.4;
+  drawStars(t);
+  requestAnimationFrame(animate);
+}
+
+resizeCanvas(); createStars(); animate();
+window.addEventListener('resize', () => { resizeCanvas(); createStars(); });
+
+// shooting star interval
+setInterval(spawnShootingStar, 3500);
+
+// ── Petals ──
+const petalEmojis = ['🌸', '🌺', '✨', '💕', '🌷', '💫', '🌸'];
+function spawnPetal() {
+  const p = document.createElement('div');
+  p.className = 'petal';
+  p.textContent = petalEmojis[Math.floor(Math.random() * petalEmojis.length)];
+  p.style.left = Math.random() * 100 + 'vw';
+  p.style.top = '-40px';
+  const dur = 7 + Math.random() * 9;
+  p.style.animationDuration = dur + 's';
+  p.style.fontSize = (11 + Math.random() * 16) + 'px';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), dur * 1000 + 500);
+}
+setInterval(spawnPetal, 1000);
+
+// ── Scroll reveal ──
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const delay = parseInt(e.target.dataset.delay) || 0;
+      setTimeout(() => e.target.classList.add('visible'), delay);
+    }
+  });
+}, { threshold: 0.08 });
+sections.forEach(s => observer.observe(s));
+
+// ── Animated counters ──
+function animateCount(el, end, duration) {
+  let start = 0;
+  const step = end / (duration / 16);
+  const timer = setInterval(() => {
+    start += step;
+    if (start >= end) { start = end; clearInterval(timer); }
+    el.textContent = Math.floor(start).toLocaleString();
+  }, 16);
+}
+
+// Start counters when visible
+const counterSection = document.querySelector('[data-delay="80"]');
+const counterObserver = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    setTimeout(() => {
+      animateCount(document.getElementById('cnt-days'), 365, 2000);
+      animateCount(document.getElementById('cnt-hours'), 8760, 2600);
+    }, 300);
+    counterObserver.disconnect();
+  }
+}, { threshold: 0.3 });
+counterObserver.observe(counterSection);
+</script>
+</body>
+</html>
